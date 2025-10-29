@@ -7,8 +7,9 @@ class Program
     {
         {1, "List all tasks"},
         {2, "Create new task"},
-        {3, "Update task"},
-        {4, "Delete task"},
+        {3, "Toggle task completion"},
+        {4, "Update task"},
+        {5, "Delete task"},
         {0, "Exit"}
     };
     
@@ -40,9 +41,12 @@ class Program
                 CreateNewTask();
                 break;
             case "3":
-                UpdateTask();
+                ToggleTaskCompletion();
                 break;
             case "4":
+                UpdateTask();
+                break;
+            case "5":
                 DeleteTask();
                 break;
             case "0":
@@ -59,7 +63,7 @@ class Program
     /// </summary>
     static void ListAllTasks()
     {
-        PrintLineColor("All tasks\n---------", ConsoleColor.Yellow);
+        PrintLineColorWithUnderline("All tasks", ConsoleColor.Yellow);
         
         if (_taskManager.Tasks.Count == 0)
         {
@@ -80,8 +84,18 @@ class Program
                 PrintColor("Priority: ", ConsoleColor.Red);
                 PrintLineColor(_taskManager.Tasks[i].TaskPriority.ToString(), ConsoleColor.Green);
 
+                if (_taskManager.Tasks[i].IsCompleted)
+                {
+                    PrintColor("✅ Completed", ConsoleColor.Green);
+                }
+                else
+                {
+                    PrintColor("❌ Not Completed", ConsoleColor.Red);
+                }
+
             }
         }
+        
         Console.WriteLine();
     }
     
@@ -115,6 +129,22 @@ class Program
         _taskManager.AddTask(newTask);
     }
 
+    static void ToggleTaskCompletion()
+    {
+        PrintLineColorWithUnderline("Toggle Task Completion", ConsoleColor.Yellow);
+
+        if (_taskManager.Tasks.Count == 0)
+        {
+            PrintLineColor("No tasks found!", ConsoleColor.Red);
+            Console.WriteLine();
+            return;
+        }
+
+        TaskItem task = SelectTask();
+        
+        _taskManager.ToggleTaskCompletion(task);
+    }
+    
     /// <summary>
     /// Update a given task
     /// </summary>
@@ -135,9 +165,20 @@ class Program
         string newDescription = GetUserInput("Give a new description (Blank to keep the same)", ConsoleColor.Green);
         int? newPriority = GetUserNumberInput("Give a new priority (Blank to keep the same)", ConsoleColor.Green);
 
-        bool updated = _taskManager.UpdateTask(task, newName, newDescription, newPriority);
+        List<string> updateList = _taskManager.UpdateTask(task, newName, newDescription, newPriority);
+
+        if (updateList.Count > 0)
+        {
+            foreach (var update in updateList)
+            {
+                PrintLineColor($"Updated {update}.", ConsoleColor.Yellow);
+            }
+        }
+        else
+        {
+            PrintLineColor("Nothing updated", ConsoleColor.Yellow);
+        }
         
-        PrintLineColor(updated ? "Task updated" : "Nothing updated", ConsoleColor.Yellow);
         Console.WriteLine();
     }
 
@@ -172,7 +213,7 @@ class Program
         
         string[] possibleSelections = Enumerable.Range(1, _taskManager.Tasks.Count).Select(n => n.ToString()).ToArray();
         
-        int userSelection = int.Parse(GetValidUserInput("Which task? ", ConsoleColor.Green, possibleSelections)) - 1;
+        int userSelection = int.Parse(GetValidUserInput("Which task?", ConsoleColor.Green, possibleSelections)) - 1;
 
         return _taskManager.Tasks[userSelection];
     }

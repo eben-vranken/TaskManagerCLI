@@ -6,11 +6,15 @@ public class TaskItem
     public string TaskDescription { get; set; }
     public int TaskPriority { get; set; }
     
-    // SETTERS
+    public bool IsCompleted { get; set; }
+    
+    public TaskItem() {}
+    
     public TaskItem(string taskName, string taskDescription, int taskPriority)
     {
         this.TaskName = taskName;
         this.TaskDescription = taskDescription;
         this.TaskPriority = taskPriority;
+        this.IsCompleted = false;
     }
 }
